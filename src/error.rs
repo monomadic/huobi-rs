@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use serde_json;
+
 use ::reqwest::StatusCode;
 impl From<StatusCode> for KucoinError {
     fn from(error: ::reqwest::StatusCode) -> Self {
@@ -17,6 +19,15 @@ impl From<StatusCode> for KucoinError {
                     message: format!("Received response: {:?}", status),
                 }
             }
+        }
+    }
+}
+
+impl From<serde_json::Error> for KucoinError {
+    fn from(error: serde_json::Error) -> Self {
+        Self {
+            error_type: KucoinErrorType::ParseError,
+            message: error.to_string(),
         }
     }
 }
@@ -40,4 +51,5 @@ pub struct KucoinError {
 pub enum KucoinErrorType {
     General,
     Unauthorized,
+    ParseError,
 }

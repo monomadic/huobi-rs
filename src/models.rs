@@ -1,8 +1,24 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
+use std::str::FromStr;
+use std::fmt::Display;
+use serde::de::{self, Deserialize, Deserializer};
+
+fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+    where T: FromStr,
+          T::Err: Display,
+          D: Deserializer<'de>
+{
+    let s = String::deserialize(deserializer)?;
+    T::from_str(&s).map_err(de::Error::custom)
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct APIResponse<R> {
     pub success: bool,
     pub code: String,
+    pub msg: String,
     pub data: R,
 }
 
@@ -19,15 +35,25 @@ pub struct ServerInfo {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Balances {
+    pub total: i32,
+    #[serde(rename = "datas")]
     pub balances: Vec<Balance>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Balance {
-    pub currency: String,       // Currency ID "BTC", "ETH"
-    #[serde(rename = "type")]
-    pub currency_type: String,  // enum[exchange]
+    #[serde(rename = "coinType")]
+    pub symbol: String,       // Currency ID "BTC", "ETH"
+    #[serde(rename = "balance")]
     pub total: f64,             // Total amount of balance
-    pub on_order: f64,
-    pub locked: bool,
+    #[serde(rename = "freezeBalance")]
+    pub locked: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Coin {
+    #[serde(rename = "coinType")]
+    pub symbol: String,       // Currency ID "BTC", "ETH"
+    #[serde(rename = "lastDealPrice")]
+    pub last_price: f64,
 }
