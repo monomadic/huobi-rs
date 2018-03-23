@@ -43,9 +43,8 @@ pub struct Balances {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Balance {
     #[serde(rename = "coinType")]
-    pub symbol: String,       // Currency ID "BTC", "ETH"
-    #[serde(rename = "balance")]
-    pub total: f64,             // Total amount of balance
+    pub symbol: String,                 // Currency ID "BTC", "ETH"
+    pub balance: f64,                   // Total amount of balance
     #[serde(rename = "freezeBalance")]
     pub locked: f64,
 }
