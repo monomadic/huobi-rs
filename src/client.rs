@@ -1,14 +1,20 @@
-use reqwest;
+//use reqwest {
+//    mod ::header{
+//        mod ContentType, Headers, UserAgent
+//    },
+//    mod { Response, StatusCode }
+//};
+//use reqwest::header::{ContentType, Headers, UserAgent};
 use reqwest::{Response, StatusCode};
-use reqwest::header::{ContentType, Headers, UserAgent};
+
 use ring::{digest, hmac};
 
-use time;
+//use base64;
 use hex::encode as hex_encode;
-use base64;
+//use time;
+use crate::{ error::*, models::* };
 
-use error::*;
-use models::*;
+mod market;
 
 #[derive(Clone)]
 pub struct Client {
@@ -16,7 +22,7 @@ pub struct Client {
     secret_key: String,
 }
 
-static API_HOST: &'static str = "https://api.kucoin.com";
+static API_HOST: &'static str = "https://api.huobi.pro";
 
 impl Client {
     pub fn new(api_key: &str, secret_key: &str) -> Self {
@@ -26,73 +32,64 @@ impl Client {
         }
     }
 
-    pub fn get(&self, endpoint: &str, request: &str) -> Result<String, KucoinError> {
+    pub fn get(&self, endpoint: &str, request: &str) -> APIResult<String> {
         let mut url: String = format!("{}{}", API_HOST, endpoint);
         if !request.is_empty() {
             url.push_str(format!("?{}", request).as_str());
         }
 
-        let response = reqwest::get(url.as_str()).expect("expected get request to be valid");
-
-        self.handler(response)
+//        reqwest::get(url.as_str()).map_err(|_| HuobiError::ApiError)?.text()
+        Ok(reqwest::get(url.as_str())?.text()?)
     }
 
-    pub fn get_signed(&self, endpoint: &str, request: &str) -> Result<String, KucoinError> {
+    pub fn get_signed(&self, endpoint: &str, request: &str) -> APIResult<String> {
         let sig = self.calculate_signature(endpoint, request);
         let url = format!("{}{}{}", API_HOST, endpoint, request);
+        let client = reqwest::ClientBuilder::new().default_headers(self.build_headers(&sig)?).build()?;
 
-        let client = reqwest::Client::new();
-        let response = client
-            .get(url.as_str())
-            .headers(self.build_headers(&sig))
-            .send()?;
-
-        self.handler(response)
+        Ok(reqwest::get(url.as_str())?.text()?)
     }
 
-    fn handler(&self, mut response: Response) -> Result<String, KucoinError> {
-        use std::io::Read;
-
-        match response.status() {
-            StatusCode::Ok => {
-                let mut body = String::new();
-                response.read_to_string(&mut body).expect("read_to_string");
-                Ok(body)
-            },
-            // error_status => Err(error_status),
-            // StatusCode::InternalServerError => {
-            //     // bail!("Internal Server Error");
-            //     // reqwest::Error {
-            //     //     kind: reqwest::error::Kind::f,
-            //     //     url: "",
-            //     // }
-
-            // }
-            // StatusCode::ServiceUnavailable => {
-            //     // bail!("Service Unavailable");
-            // }
-            StatusCode::Unauthorized => {
-                Err(KucoinError {
-                    error_type: KucoinErrorType::Unauthorized,
-                    message: format!("Unauthorised request."),
-                })
-            }
-            // StatusCode::BadRequest => {
-            //     // bail!(format!("Bad Request: {:?}", response));
-            // }
-            s => {
-                Err(KucoinError {
-                    error_type: KucoinErrorType::General,
-                    message: format!("Received response: {:?}", s),
-                })
-            }
-        }
-    }
+//    fn handler(&self, mut response: Response) -> APIResult<String> {
+//        if response.status().is_success() {
+//            Ok(response.text().unwrap())
+//        } else {
+//            Err(Box::new(response.error_for_status()))
+//        }
+//
+//        StatusCode
+//
+//
+////        match response.status().as_u16() {
+////            StatusCode::from_u16(200) => {
+////                let mut body = String::new();
+////                response.read_to_string(&mut body).unwrap();
+////                Ok(body)
+////            }
+////            StatusCode::InternalServerError => {
+////                bail!("Internal Server Error");
+////            }
+////            StatusCode::ServiceUnavailable => {
+////                bail!("Service Unavailable");
+////            }
+////            StatusCode::Unauthorized => {
+////                bail!("Unauthorized");
+////            }
+////            StatusCode::BadRequest => {
+////                bail!(format!("Bad Request: {:?}", response));
+////            }
+////            s => {
+////                bail!(format!("Received response: {:?}", s));
+////            }
+////        }
+//    }
 
     fn nonce() -> String {
         use std::time::{SystemTime, UNIX_EPOCH};
         let start = SystemTime::now();
-        let since_the_epoch = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
+        let since_the_epoch = start
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
         let nonce = since_the_epoch.as_secs() * 1000; // +
 
         nonce.to_string()
@@ -107,18 +104,23 @@ impl Client {
         signature
     }
 
-    fn build_headers(&self, signature: &str) -> Headers {
-        let mut custom_headers = Headers::new();
+    fn build_headers(&self, signature: &str) -> APIResult<reqwest::header::HeaderMap> {
+        let mut custom_headers = reqwest::header::HeaderMap::new();
 
-        custom_headers.set_raw("KC-API-KEY", self.api_key.as_str());
-        custom_headers.set_raw("KC-API-NONCE", self::Client::nonce());
-        custom_headers.set_raw("KC-API-SIGNATURE", signature);
+        custom_headers.insert("KC-API-KEY", reqwest::header::HeaderValue::from_str(&self.api_key)?);
 
-        custom_headers.set_raw("HTTP_ACCEPT_LANGUAGE", "en-US");
-        custom_headers.set_raw("Accept-Language", "en-US");
-        custom_headers.set_raw("User-Agent", "kucoin-rs");
-        custom_headers.set_raw("Accept", "application/json");
 
-        custom_headers
+
+//                              HeaderValue::new() self.api_key.as_str());
+//        custom_headers.set_raw("KC-API-KEY", self.api_key.as_str());
+//        custom_headers.set_raw("KC-API-NONCE", self::Client::nonce());
+//        custom_headers.set_raw("KC-API-SIGNATURE", signature);
+//
+//        custom_headers.set_raw("HTTP_ACCEPT_LANGUAGE", "en-US");
+//        custom_headers.set_raw("Accept-Language", "en-US");
+//        custom_headers.set_raw("User-Agent", "kucoin-rs");
+//        custom_headers.set_raw("Accept", "application/json");
+
+        Ok(custom_headers)
     }
 }

@@ -1,15 +1,15 @@
-use client::*;
-use error::*;
-use models::*;
+use super::*;
+use crate::error::*;
+use crate::models::*;
 
 use serde_json::from_str;
 
 impl Client {
-    pub fn common_symbols(&self, symbol: &str) -> APIResult<String> {
+    pub fn common_symbols(&self) -> APIResult<Vec<Pair>> {
         let data = self.get("/v1/common/symbols", "")?;
-        let response: APIResponse<ServerTime> = from_str(data.as_str()).unwrap();
+        let response: APIResponse<Vec<Pair>> = from_str(data.as_str()).unwrap();
 
-        Ok(response.result.time)
+        Ok(response.data)
     }
 //
 //    /// get server time

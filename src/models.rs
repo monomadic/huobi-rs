@@ -3,7 +3,8 @@
 
 use std::str::FromStr;
 use std::fmt::Display;
-use serde::de::{self, Deserialize, Deserializer};
+//use serde::de::{self, Deserialize, Deserializer};
+use serde::{de, Deserialize, Serialize, Deserializer};
 
 fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
     where T: FromStr,
@@ -50,7 +51,7 @@ pub struct Balance {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Coin {
+pub struct Pair {
     #[serde(rename = "coinType")]
     pub symbol: String,       // Currency ID "BTC", "ETH"
     #[serde(rename = "lastDealPrice")]

@@ -1,18 +1,10 @@
-extern crate reqwest;
-
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-
-extern crate ring;
-extern crate time;
-extern crate hex;
-extern crate base64;
+// Huobi API
+//
+// references:
+//  - https://github.com/huobiapi/API_Docs_en/wiki/Huobi.pro-API
 
 pub mod client;
 pub mod error;
 pub mod models;
-pub mod account;
 
-pub use client::Client;
+pub use crate::client::Client;
