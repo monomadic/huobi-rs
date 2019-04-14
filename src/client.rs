@@ -53,7 +53,7 @@ impl Client {
         params.insert("SignatureVersion".to_string(), "2".to_string());
 
         // time
-        use percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
+        //        use percent_encoding::{utf8_percent_encode, PATH_SEGMENT_ENCODE_SET};
         use std::time::{SystemTime, UNIX_EPOCH};
 
         let utc_time = chrono::Utc::now();
@@ -63,7 +63,11 @@ impl Client {
         // end time
 
         let query_string = build_query_string(params);
-        let signature = sign_hmac_sha256_base64(&self.secret_key, &query_string);
+        let signature = sign_hmac_sha256_base64(&self.secret_key, &query_string).to_string();
+
+        use percent_encoding::{utf8_percent_encode, USERINFO_ENCODE_SET};
+        let signature = utf8_percent_encode(&signature, USERINFO_ENCODE_SET).to_string();
+
         let request = format!(
             "{}{}?{}&Signature={}",
             API_HOST, endpoint, query_string, signature
@@ -138,37 +142,37 @@ impl Client {
     ////            }
     ////        }
     //    }
-
-    fn nonce() -> String {
-        use std::time::{SystemTime, UNIX_EPOCH};
-        let start = SystemTime::now();
-        let since_the_epoch = start
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        let nonce = since_the_epoch.as_secs() * 1000; // +
-
-        nonce.to_string()
-    }
+    //
+    //    fn nonce() -> String {
+    //        use std::time::{SystemTime, UNIX_EPOCH};
+    //        let start = SystemTime::now();
+    //        let since_the_epoch = start
+    //            .duration_since(UNIX_EPOCH)
+    //            .expect("Time went backwards");
+    //        let nonce = since_the_epoch.as_secs() * 1000; // +
+    //
+    //        nonce.to_string()
+    //    }
 
     //    fn calculate_signature(&self, endpoint: &str, query_string: &str) -> String {}
 
-    fn build_headers(&self, signature: &str) -> APIResult<HeaderMap> {
-        let mut custom_headers = HeaderMap::new();
-
-        //        custom_headers.insert("KC-API-KEY", HeaderValue::from_str(&self.api_key)?);
-
-        //                              HeaderValue::new() self.api_key.as_str());
-        //        custom_headers.set_raw("KC-API-KEY", self.api_key.as_str());
-        //        custom_headers.set_raw("KC-API-NONCE", self::Client::nonce());
-        //        custom_headers.set_raw("KC-API-SIGNATURE", signature);
-        //
-        //        custom_headers.set_raw("HTTP_ACCEPT_LANGUAGE", "en-US");
-        //        custom_headers.set_raw("Accept-Language", "en-US");
-        //        custom_headers.set_raw("User-Agent", "kucoin-rs");
-        //        custom_headers.set_raw("Accept", "application/json");
-
-        Ok(custom_headers)
-    }
+    //    fn build_headers(&self, signature: &str) -> APIResult<HeaderMap> {
+    //        let mut custom_headers = HeaderMap::new();
+    //
+    //        //        custom_headers.insert("KC-API-KEY", HeaderValue::from_str(&self.api_key)?);
+    //
+    //        //                              HeaderValue::new() self.api_key.as_str());
+    //        //        custom_headers.set_raw("KC-API-KEY", self.api_key.as_str());
+    //        //        custom_headers.set_raw("KC-API-NONCE", self::Client::nonce());
+    //        //        custom_headers.set_raw("KC-API-SIGNATURE", signature);
+    //        //
+    //        //        custom_headers.set_raw("HTTP_ACCEPT_LANGUAGE", "en-US");
+    //        //        custom_headers.set_raw("Accept-Language", "en-US");
+    //        //        custom_headers.set_raw("User-Agent", "kucoin-rs");
+    //        //        custom_headers.set_raw("Accept", "application/json");
+    //
+    //        Ok(custom_headers)
+    //    }
 }
 
 /// Compiles query string parameters into a http query string, in byte-order.
@@ -198,56 +202,12 @@ pub fn build_query_string(mut parameters: BTreeMap<String, String>) -> String {
         .join("&")
 }
 
-///// Compiles query string parameters into a http query string, in byte-order.
-/////
-///// ```rust
-///// assert_eq!(huobi::client::compile_request("GET", "api.huobi.pro", "/v1/order/orders", "AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&order-id=1234567890&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30", "b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx"), "https://api.huobi.pro/v1/order/orders?AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&order-id=1234567890&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&Signature=4F65x5A2bLyMWVQj3Aqp%2BB4w%2BivaA7n5Oi2SuYtCJ9o%3D".to_string());
-///// ```
-//pub fn compile_request(
-//    method: &str,
-//    host: &str,
-//    endpoint: &str,
-//    params: &str,
-//    secret: &str,
-//) -> String {
-//    let url = format!("{}\n{}\n{}\n{}", method, host, endpoint, params);
-//    let base64_url = base64::encode(&url.as_bytes());
-//    let signed_key = hmac::SigningKey::new(&digest::SHA256, secret.as_bytes());
-//    let signature = hex_encode(hmac::sign(&signed_key, base64_url.as_bytes()));
-//
-//    format!(
-//        "https://{}{}?{}&Signature={}",
-//        host, endpoint, params, base64_url
-//    )
-//}
-
 /// Compiles query string parameters into a http query string, in byte-order.
 ///
 /// ```rust
 /// assert_eq!(huobi::client::sign_hmac_sha256_base64("b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx", "GET\napi.huobi.pro\n/v1/order/orders\nAccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890"), "Nmd8AU8uAe0mkFpxNbiava0aeZzBEtYjCdie1ZYZjoM=");
 /// ```
 pub fn sign_hmac_sha256_base64(secret: &str, params: &str) -> String {
-    //    let signed_key = hmac::SigningKey::new(&digest::SHA256, secret.as_bytes());
-    //    //    hmac::sign(&signed_key, params.as_bytes());
-    //    //    let signature = hex_encode(hmac::sign(&signed_key, params.as_bytes()));
-    //    let signature = hmac::sign(&signed_key, params.as_bytes());
-    //    //    println!("  - {:02x?}", signature);
-    //    //    let signature = format!("{:02x?}", signature);
-    //    let base64_url = base64::encode(&signature.as_bytes());
-    //    hex_encode(base64_url)
-
-    //    use crypto::digest::Digest;
-    //    use crypto::sha2::Sha256;
-    //    use serialize::base64::{ToBase64, STANDARD};
-    //
-    //    let mut sha = Sha256::new();
-    //    sha.input_str(secret);
-    //    //    Vec::from_elem(sha.output_bytes(), 0u8);
-    //    Vec::from_iter(repeat(0u8).take(sha.output_bytes()));
-    //
-    //    sha.result(params.as_mut_slice());
-    //    format!("{}", bytes.to_base64(STANDARD))
-
     use data_encoding::BASE64;
 
     //    let secret_key = "b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx";
