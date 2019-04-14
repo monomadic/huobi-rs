@@ -12,6 +12,11 @@ time = "0.1.38"
 ring = "0.13.0-alpha"
 hex = "0.3"
 base64 = "~0.6.0"
+crypto = { version = "0.2.36", package = "rust-crypto" }
+serialize = { version = "^0.3", package = "rustc-serialize" }
+data-encoding = "2.1.2"
+chrono = "^0.4"
+percent-encoding = "1.0.1"
 
 [lib]
 name = "huobi"
