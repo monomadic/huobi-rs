@@ -11,19 +11,18 @@ impl Client {
 
         Ok(response.data)
     }
-//
-//    /// get server time
-//    pub fn get_server_time(&self) -> APIResult<u64> {
-//        let data = self.get("/v1/system/time", "")?;
-//        let response: APIResponse<ServerTime> = from_str(data.as_str()).unwrap();
-//
-//        Ok(response.result.time)
-//    }
-//
-//    pub fn get_server_info(&self) -> APIResult<ServerInfo> {
-//        let data = self.get("/v1/system/info", "")?;
-//        let response: APIResponse<ServerInfo> = from_str(data.as_str()).unwrap();
-//
-//        Ok(response.result)
-//    }
+
+    pub fn common_currencys(&self) -> APIResult<Vec<Currency>> {
+        let data = self.get("/v1/common/currencys", "")?;
+        let response: APIResponse<Vec<Currency>> = from_str(data.as_str())?;
+
+        Ok(response.data)
+    }
+
+    pub fn common_timestamp(&self) -> APIResult<Timestamp> {
+        let data = self.get("/v1/common/timestamp", "")?;
+        let response: APIResponse<Timestamp> = from_str(data.as_str())?;
+
+        Ok(response.data)
+    }
 }
