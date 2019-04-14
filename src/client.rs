@@ -1,18 +1,9 @@
-//use reqwest {
-//    mod ::header{
-//        mod ContentType, Headers, UserAgent
-//    },
-//    mod { Response, StatusCode }
-//};
-//use reqwest::header::{ContentType, Headers, UserAgent};
 use reqwest::{Response, StatusCode};
-
 use ring::{digest, hmac};
-
-//use base64;
 use hex::encode as hex_encode;
-//use time;
 use crate::{ error::*, models::* };
+//use base64;
+//use time;
 
 mod market;
 
@@ -38,8 +29,11 @@ impl Client {
             url.push_str(format!("?{}", request).as_str());
         }
 
-//        reqwest::get(url.as_str()).map_err(|_| HuobiError::ApiError)?.text()
-        Ok(reqwest::get(url.as_str())?.text()?)
+        let result = reqwest::get(url.as_str())?.text()?;
+
+        println!("{:#?}", result);
+
+        Ok(result)
     }
 
     pub fn get_signed(&self, endpoint: &str, request: &str) -> APIResult<String> {

@@ -17,9 +17,7 @@ fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct APIResponse<R> {
-    pub success: bool,
-    pub code: String,
-    pub msg: String,
+    pub status: String,
     pub data: R,
 }
 
@@ -43,17 +41,30 @@ pub struct Balances {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Balance {
-    #[serde(rename = "coinType")]
+//    #[serde(rename = "coinType")]
     pub symbol: String,                 // Currency ID "BTC", "ETH"
     pub balance: f64,                   // Total amount of balance
-    #[serde(rename = "freezeBalance")]
+//    #[serde(rename = "freezeBalance")]
     pub locked: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pair {
-    #[serde(rename = "coinType")]
-    pub symbol: String,       // Currency ID "BTC", "ETH"
-    #[serde(rename = "lastDealPrice")]
-    pub last_price: f64,
+    #[serde(rename = "base-currency")]
+    pub base_currency: String,       // "eth", "btc"
+
+    #[serde(rename = "quote-currency")]
+    pub quote_currency: String,       // "eth", "btc"
+
+    #[serde(rename = "price-precision")]
+    pub price_precision: u32,
+
+    #[serde(rename = "amount-precision")]
+    pub amount_precision: u32,
+
+    #[serde(rename = "symbol-partition")]
+    pub symbol_partition: String,
+
+    #[serde(rename = "symbol")]         // "edubtc", "linkusdt"
+    pub symbol: String,
 }

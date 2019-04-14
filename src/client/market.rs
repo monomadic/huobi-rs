@@ -7,7 +7,7 @@ use serde_json::from_str;
 impl Client {
     pub fn common_symbols(&self) -> APIResult<Vec<Pair>> {
         let data = self.get("/v1/common/symbols", "")?;
-        let response: APIResponse<Vec<Pair>> = from_str(data.as_str()).unwrap();
+        let response: APIResponse<Vec<Pair>> = from_str(data.as_str())?;
 
         Ok(response.data)
     }
