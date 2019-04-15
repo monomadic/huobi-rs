@@ -129,6 +129,8 @@ pub fn sign_hmac_sha256_base64(secret: &str, digest: &str) -> String {
     let signature = hmac::sign(&signed_key, digest.as_bytes());
     let b64_encoded_sig = BASE64.encode(signature.as_ref());
 
+    println!("sig: {}", b64_encoded_sig);
+
     b64_encoded_sig
 }
 
@@ -136,10 +138,16 @@ pub fn sign_hmac_sha256_base64(secret: &str, digest: &str) -> String {
 ///
 /// ```rust
 /// assert_eq!(huobi::client::percent_encode("2017-05-11T15:19:30"), "2017-05-11T15%3A19%3A30");
+/// assert_eq!(huobi::client::percent_encode("WyZoIcQwHFT/Y9pALN/PYSDoyqmmIBp4w9D+k/NnSo4="), "WyZoIcQwHFT%2FY9pALN%2FPYSDoyqmmIBp4w9D%2Bk%2FNnSo4%3D");
 /// ```
 pub fn percent_encode(source: &str) -> String {
-    use percent_encoding::{utf8_percent_encode, USERINFO_ENCODE_SET};
-    let signature = utf8_percent_encode(&source, USERINFO_ENCODE_SET).to_string();
+    use percent_encoding::{define_encode_set, utf8_percent_encode, USERINFO_ENCODE_SET};
+
+    define_encode_set! {
+        pub CUSTOM_ENCODE_SET = [USERINFO_ENCODE_SET] | { '+' }
+    }
+
+    let signature = utf8_percent_encode(&source, CUSTOM_ENCODE_SET).to_string();
 
     signature
 }
