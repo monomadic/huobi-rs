@@ -1,11 +1,9 @@
 use crate::{error::*, models::*};
+use core::fmt::Debug;
 use hex::encode as hex_encode;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Response, StatusCode};
 use ring::{digest, hmac};
-//use base64;
-//use time;
-use core::fmt::Debug;
 use std::collections::BTreeMap;
 
 mod account;
@@ -65,13 +63,11 @@ impl Client {
             percent_encode(&signature.clone())
         );
 
-        println!("request = {}", request.clone());
         let mut response = reqwest::get(request.as_str())?;
         let body = response.text()?;
 
         // check for errors
         let err_response: APIErrorResponse = serde_json::from_str(body.as_str())?;
-        println!("err_response: {:?}", err_response);
 
         if err_response.status == "error" {
             if let Some(err_msg) = err_response.err_msg {
@@ -118,16 +114,9 @@ pub fn build_query_string(parameters: BTreeMap<String, String>) -> String {
 pub fn sign_hmac_sha256_base64(secret: &str, digest: &str) -> String {
     use data_encoding::BASE64;
 
-    println!("digest: --{}--", digest);
-
-    //    let secret_key = "b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx";
-    //    let payload = "GET\napi.huobi.pro\n/v1/order/orders\nAccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890";
-
     let signed_key = hmac::SigningKey::new(&digest::SHA256, secret.as_bytes());
     let signature = hmac::sign(&signed_key, digest.as_bytes());
     let b64_encoded_sig = BASE64.encode(signature.as_ref());
-
-    println!("sig: {}", b64_encoded_sig);
 
     b64_encoded_sig
 }
@@ -155,7 +144,6 @@ pub fn get_timestamp() -> String {
 
     let utc_time = chrono::Utc::now();
     let formatted_time = utc_time.format("%Y-%m-%dT%H:%M:%S").to_string();
-    println!("timestamp: {}", formatted_time.clone());
 
     formatted_time
 }
