@@ -20,6 +20,11 @@ where
 pub struct APIResponse<R> {
     pub status: String,
     pub data: R,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct APIErrorResponse {
+    pub status: String,
 
     #[serde(rename = "err-code")]
     pub err_code: Option<String>,
@@ -30,10 +35,16 @@ pub struct APIResponse<R> {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Account {
-    account_id: u32,
-    user_id: u32,
-    account_type: String,
     state: String,
+
+    #[serde(rename = "id")]
+    account_id: u32,
+
+    #[serde(rename = "type")]
+    account_type: String,
+
+    #[serde(rename = "subtype")]
+    account_subtype: String,
 }
 
 pub type Currency = Vec<String>;

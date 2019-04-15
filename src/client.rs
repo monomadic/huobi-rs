@@ -70,7 +70,7 @@ impl Client {
         let body = response.text()?;
 
         // check for errors
-        let err_response: APIResponse<Option<String>> = serde_json::from_str(body.as_str())?;
+        let err_response: APIErrorResponse = serde_json::from_str(body.as_str())?;
         println!("err_response: {:?}", err_response);
 
         if err_response.status == "error" {
@@ -84,8 +84,6 @@ impl Client {
             }
         }
 
-        println!("{:#?}", response);
-        let body = response.text()?;
         Ok(body)
     }
 }
