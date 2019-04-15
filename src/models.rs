@@ -34,16 +34,16 @@ pub struct APIErrorResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Account {
-    state: String,
+    pub state: String,
 
     #[serde(rename = "id")]
-    account_id: u32,
+    pub account_id: u32,
 
     #[serde(rename = "type")]
-    account_type: String,
+    pub account_type: String,
 
     #[serde(rename = "subtype")]
-    account_subtype: String,
+    pub account_subtype: String,
 }
 
 pub type Currency = Vec<String>;

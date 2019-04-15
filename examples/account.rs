@@ -7,7 +7,17 @@ fn main() {
     println!("symbols: {:?}", client.common_symbols());
 
     match client.accounts() {
-        Ok(accounts) => println!("accounts: {:?}", accounts),
-        Err(why) => println!("error: {}", why),
+        Ok(accounts) => println!(
+            "accounts:\n{}",
+            accounts
+                .into_iter()
+                .map(|account| format!(
+                    "{}: {} - {}",
+                    account.account_id, account.state, account.account_type
+                ))
+                .collect::<Vec<String>>()
+                .join("\n")
+        ),
+        Err(why) => println!("{}", why),
     }
 }
