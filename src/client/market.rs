@@ -5,6 +5,7 @@ use crate::models::*;
 use serde_json::from_str;
 
 impl Client {
+    /// return all symbol pairs used on the exchange.
     pub fn common_symbols(&self) -> APIResult<Vec<Pair>> {
         let data = self.get("/v1/common/symbols", "")?;
         let response: APIResponse<Vec<Pair>> = from_str(data.as_str())?;

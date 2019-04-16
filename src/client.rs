@@ -9,6 +9,13 @@ use std::collections::BTreeMap;
 mod account;
 mod market;
 
+use self::account::*;
+use self::market::*;
+
+// re-exports
+pub use self::account::*;
+pub use self::market::*;
+
 #[derive(Clone)]
 pub struct Client {
     api_key: String,
