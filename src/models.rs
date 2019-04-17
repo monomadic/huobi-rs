@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use serde::{de, Deserialize, Deserializer, Serialize};
-use std::fmt::Display;
+use serde::de::{self, Unexpected, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{self, Display};
 use std::str::FromStr;
 
 fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>
@@ -92,4 +93,49 @@ pub struct Ticker {
     pub high: f64,
     pub vol: f64,
     pub symbol: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Balance {
+    pub id: u32,
+    #[serde(rename = "type")]
+    pub account_type: String,
+    pub state: String,
+    pub list: Vec<Asset>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Asset {
+    pub currency: String,
+    #[serde(rename = "type")]
+    pub trade_type: String,
+    #[serde(deserialize_with = "string_as_f64")]
+    pub balance: f64,
+}
+
+fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(F64Visitor)
+}
+
+struct F64Visitor;
+impl<'de> Visitor<'de> for F64Visitor {
+    type Value = f64;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string representation of a f64")
+    }
+    fn visit_str<E>(self, value: &str) -> Result<f64, E>
+    where
+        E: de::Error,
+    {
+        if let Ok(integer) = value.parse::<i32>() {
+            Ok(integer as f64)
+        } else {
+            value.parse::<f64>().map_err(|err| {
+                E::invalid_value(Unexpected::Str(value), &"a string representation of a f64")
+            })
+        }
+    }
 }
