@@ -17,6 +17,8 @@ serialize = { version = "^0.3", package = "rustc-serialize" }
 data-encoding = "2.1.2"
 chrono = "^0.4"
 percent-encoding = "1.0.1"
+log = "0.4.5"
+simple_logger = "1.0.1"
 
 [lib]
 name = "huobi"

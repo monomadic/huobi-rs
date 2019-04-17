@@ -15,4 +15,6 @@ fn main() {
         ),
         Err(why) => println!("error: {}", why),
     }
+
+    println!("common_timestamp: {:?}", client.common_timestamp());
 }

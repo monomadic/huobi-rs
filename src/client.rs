@@ -1,16 +1,12 @@
 use crate::{error::*, models::*};
-use core::fmt::Debug;
-use hex::encode as hex_encode;
-use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::{Response, StatusCode};
+//use hex::encode as hex_encode;
+//use reqwest::header::{HeaderMap, HeaderValue};
+//use reqwest::{Response, StatusCode};
 use ring::{digest, hmac};
 use std::collections::BTreeMap;
 
 mod account;
 mod market;
-
-use self::account::*;
-use self::market::*;
 
 // re-exports
 pub use self::account::*;
@@ -18,6 +14,7 @@ pub use self::market::*;
 
 #[derive(Clone)]
 pub struct Client {
+    //    key: Option<APIKey>,
     api_key: String,
     secret_key: String,
 }
@@ -59,8 +56,11 @@ impl Client {
         Ok(body)
     }
 
-    pub fn get_signed(&self, endpoint: &str, params: &str) -> APIResult<String> {
-        let mut params: BTreeMap<String, String> = BTreeMap::new();
+    pub fn get_signed(
+        &self,
+        endpoint: &str,
+        mut params: BTreeMap<String, String>,
+    ) -> APIResult<String> {
         params.insert("AccessKeyId".to_string(), self.api_key.clone());
         params.insert("SignatureMethod".to_string(), "HmacSHA256".to_string());
         params.insert("SignatureVersion".to_string(), "2".to_string());
@@ -81,8 +81,12 @@ impl Client {
             percent_encode(&signature.clone())
         );
 
+        ::log::info!("request: {:?}", request.clone());
+
         let mut response = reqwest::get(request.as_str())?;
         let body = response.text()?;
+
+        ::log::info!("body: {:?}", body.clone());
 
         // check for errors
         let err_response: APIErrorResponse = serde_json::from_str(body.as_str())?;
@@ -112,7 +116,7 @@ impl Client {
 /// params.insert("SignatureVersion".to_string(), "2".to_string());
 /// params.insert("Timestamp".to_string(), "2017-05-11T15:19:30".to_string());
 ///
-/// assert_eq!(huobi::client::build_query_string(params), "AccessKeyId=e2xxxxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890");
+/// assert_eq!(crate::build_query_string(params), "AccessKeyId=e2xxxxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890");
 /// ```
 pub fn build_query_string(parameters: BTreeMap<String, String>) -> String {
     parameters
@@ -125,7 +129,7 @@ pub fn build_query_string(parameters: BTreeMap<String, String>) -> String {
 /// Compiles query string parameters into a http query string, in byte-order.
 ///
 /// ```rust
-/// assert_eq!(huobi::client::sign_hmac_sha256_base64("b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx",
+/// assert_eq!(crate::sign_hmac_sha256_base64("b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx",
 ///     "GET\napi.huobi.pro\n/v1/order/orders\nAccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890"),
 ///     "Nmd8AU8uAe0mkFpxNbiava0aeZzBEtYjCdie1ZYZjoM=");
 /// ```
@@ -142,8 +146,8 @@ pub fn sign_hmac_sha256_base64(secret: &str, digest: &str) -> String {
 /// Percent encode parameter values for url distribution.
 ///
 /// ```rust
-/// assert_eq!(huobi::client::percent_encode("2017-05-11T15:19:30"), "2017-05-11T15%3A19%3A30");
-/// assert_eq!(huobi::client::percent_encode("WyZoIcQwHFT/Y9pALN/PYSDoyqmmIBp4w9D+k/NnSo4="), "WyZoIcQwHFT%2FY9pALN%2FPYSDoyqmmIBp4w9D%2Bk%2FNnSo4%3D");
+/// assert_eq!(crate::percent_encode("2017-05-11T15:19:30"), "2017-05-11T15%3A19%3A30");
+/// assert_eq!(crate::percent_encode("WyZoIcQwHFT/Y9pALN/PYSDoyqmmIBp4w9D+k/NnSo4="), "WyZoIcQwHFT%2FY9pALN%2FPYSDoyqmmIBp4w9D%2Bk%2FNnSo4%3D");
 /// ```
 pub fn percent_encode(source: &str) -> String {
     use percent_encoding::{define_encode_set, utf8_percent_encode, USERINFO_ENCODE_SET};
@@ -158,8 +162,6 @@ pub fn percent_encode(source: &str) -> String {
 }
 
 pub fn get_timestamp() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-
     let utc_time = chrono::Utc::now();
     let formatted_time = utc_time.format("%Y-%m-%dT%H:%M:%S").to_string();
 

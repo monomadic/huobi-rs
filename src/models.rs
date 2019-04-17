@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 
 use serde::de::{self, Unexpected, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::{self, Display};
 use std::str::FromStr;
 
@@ -111,6 +111,52 @@ pub struct Asset {
     pub trade_type: String,
     #[serde(deserialize_with = "string_as_f64")]
     pub balance: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Order {
+    pub id: u32,
+    pub symbol: String,
+    pub exchange: String,
+    pub batch: String,
+    pub source: String,
+    pub state: String,
+
+    #[serde(rename = "account-id")]
+    pub account_id: u32,
+
+    #[serde(deserialize_with = "string_as_f64")]
+    pub amount: f64,
+
+    #[serde(deserialize_with = "string_as_f64")]
+    pub price: f64,
+
+    #[serde(rename = "created-at")]
+    pub created_at: u32,
+
+    #[serde(rename = "type")]
+    pub order_type: String,
+
+    #[serde(rename = "field-amount")]
+    #[serde(deserialize_with = "string_as_f64")]
+    pub field_amount: f64,
+
+    #[serde(rename = "field-cash-amount")]
+    #[serde(deserialize_with = "string_as_f64")]
+    pub field_cash_amount: f64,
+
+    #[serde(rename = "field-fees")]
+    #[serde(deserialize_with = "string_as_f64")]
+    pub field_fees: f64,
+
+    #[serde(rename = "finished-at")]
+    pub finished_at: u32,
+
+    #[serde(rename = "user-id")]
+    pub user_id: u32,
+
+    #[serde(rename = "canceled-at")]
+    pub canceled_at: u32,
 }
 
 fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
