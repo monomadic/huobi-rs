@@ -38,14 +38,25 @@ impl Client {
         }
     }
 
-    pub fn get(&self, endpoint: &str, request: &str) -> APIResult<String> {
-        let mut url: String = format!("{}{}", API_HOST, endpoint);
-        if !request.is_empty() {
-            url.push_str(format!("?{}", request).as_str());
+    pub fn get(&self, endpoint: &str, params: &str) -> APIResult<String> {
+        let request = format!("https://{}{}?{}", API_HOST, endpoint, params,);
+        let body = reqwest::get(request.as_str())?.text()?;
+
+        // check for errors
+        let err_response: APIErrorResponse = serde_json::from_str(body.as_str())?;
+
+        if err_response.status == "error" {
+            if let Some(err_msg) = err_response.err_msg {
+                return Err(Box::new(HuobiError::ApiError(err_msg)));
+            } else {
+                return Err(Box::new(HuobiError::ApiError(format!(
+                    "result dump: {:?}",
+                    err_response
+                ))));
+            }
         }
 
-        let result = reqwest::get(url.as_str())?.text()?;
-        Ok(result)
+        Ok(body)
     }
 
     pub fn get_signed(&self, endpoint: &str, params: &str) -> APIResult<String> {

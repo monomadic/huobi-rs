@@ -1,7 +1,6 @@
 use super::*;
 use crate::error::*;
 use crate::models::*;
-
 use serde_json::from_str;
 
 impl Client {

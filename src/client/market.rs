@@ -1,10 +1,17 @@
 use super::*;
 use crate::error::*;
 use crate::models::*;
-
 use serde_json::from_str;
 
 impl Client {
+    /// This endpoint retrieves the latest tickers for all supported pairs.
+    pub fn tickers(&self) -> APIResult<Vec<Ticker>> {
+        let data = self.get("/market/tickers", "")?;
+        let response: APIResponse<Vec<Ticker>> = from_str(data.as_str())?;
+
+        Ok(response.data)
+    }
+
     /// return all symbol pairs used on the exchange.
     pub fn common_symbols(&self) -> APIResult<Vec<Pair>> {
         let data = self.get("/v1/common/symbols", "")?;

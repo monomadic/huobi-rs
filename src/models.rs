@@ -69,3 +69,27 @@ pub struct Pair {
     #[serde(rename = "symbol")] // "edubtc", "linkusdt"
     pub symbol: String,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Kline {
+    pub id: u32,
+    pub amount: f64,
+    pub count: u32,
+    pub open: f64,
+    pub close: f64,
+    pub low: f64,
+    pub high: f64,
+    pub vol: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Ticker {
+    pub amount: f64,
+    pub count: u32,
+    pub open: f64,
+    pub close: f64,
+    pub low: f64,
+    pub high: f64,
+    pub vol: f64,
+    pub symbol: String,
+}
