@@ -37,10 +37,14 @@ impl Client {
 
     pub fn get(&self, endpoint: &str, params: &str) -> APIResult<String> {
         let request = format!("https://{}{}?{}", API_HOST, endpoint, params,);
+        ::log::info!("request: {:?}", request.clone());
+
         let body = reqwest::get(request.as_str())?.text()?;
+        ::log::info!("result: {:?}", body.clone());
 
         // check for errors
         let err_response: APIErrorResponse = serde_json::from_str(body.as_str())?;
+
 
         if err_response.status == "error" {
             if let Some(err_msg) = err_response.err_msg {
@@ -65,6 +69,9 @@ impl Client {
         params.insert("SignatureMethod".to_string(), "HmacSHA256".to_string());
         params.insert("SignatureVersion".to_string(), "2".to_string());
         params.insert("Timestamp".to_string(), get_timestamp());
+
+
+        println!("params: {:?}", params.clone());
 
         let params = build_query_string(params);
         let signature = sign_hmac_sha256_base64(
@@ -151,13 +158,10 @@ pub fn sign_hmac_sha256_base64(secret: &str, digest: &str) -> String {
 /// ```
 pub fn percent_encode(source: &str) -> String {
     use percent_encoding::{define_encode_set, utf8_percent_encode, USERINFO_ENCODE_SET};
-
     define_encode_set! {
-        pub CUSTOM_ENCODE_SET = [USERINFO_ENCODE_SET] | { '+' }
+        pub CUSTOM_ENCODE_SET = [USERINFO_ENCODE_SET] | { '+', ',' }
     }
-
     let signature = utf8_percent_encode(&source, CUSTOM_ENCODE_SET).to_string();
-
     signature
 }
 

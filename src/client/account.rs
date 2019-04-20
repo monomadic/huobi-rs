@@ -16,17 +16,17 @@ impl Client {
         Ok(response.data)
     }
 
-    pub fn orders(&self, symbol: &str) -> APIResult<Vec<Order>> {
+    pub fn orders(&self, symbol: &str, states: &str) -> APIResult<Vec<Order>> {
         let mut params: BTreeMap<String, String> = BTreeMap::new();
         params.insert("symbol".to_string(), symbol.to_string());
         params.insert(
-            "staet".to_string(),
-            "pre-submitted,submitted,partial-filled,partial-canceled".to_string(),
+            "states".to_string(),
+            states.to_string(),
         );
-        params.insert("types".to_string(), "buy-limit".to_string());
+//        params.insert("types".to_string(), "buy-limit".to_string());
         let data = self.get_signed("/v1/order/orders", params)?;
-
         let response: APIResponse<Vec<Order>> = from_str(data.as_str())?;
+
         Ok(response.data)
     }
 }

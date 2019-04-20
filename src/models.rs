@@ -115,15 +115,13 @@ pub struct Asset {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Order {
-    pub id: u32,
+    pub id: u64,
     pub symbol: String,
-    pub exchange: String,
-    pub batch: String,
     pub source: String,
     pub state: String,
 
     #[serde(rename = "account-id")]
-    pub account_id: u32,
+    pub account_id: u64,
 
     #[serde(deserialize_with = "string_as_f64")]
     pub amount: f64,
@@ -132,7 +130,7 @@ pub struct Order {
     pub price: f64,
 
     #[serde(rename = "created-at")]
-    pub created_at: u32,
+    pub created_at: u64,
 
     #[serde(rename = "type")]
     pub order_type: String,
@@ -150,13 +148,10 @@ pub struct Order {
     pub field_fees: f64,
 
     #[serde(rename = "finished-at")]
-    pub finished_at: u32,
-
-    #[serde(rename = "user-id")]
-    pub user_id: u32,
+    pub finished_at: u64,
 
     #[serde(rename = "canceled-at")]
-    pub canceled_at: u32,
+    pub canceled_at: u64,
 }
 
 fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
